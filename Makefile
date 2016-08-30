@@ -12,6 +12,7 @@ FIRMWARE_NAME      = neudev
 CFLAGS             = -Wall
 NEUDEV_OPTIONS     = -D_GNU_SOURCE
 
+
 ###########################################################################
 # Environmental awareness...
 ###########################################################################
@@ -32,11 +33,14 @@ export OUTPUT_PATH = $(WHERE_I_AM)/build/
 INCLUDES    = -I$(WHERE_I_AM)/.
 INCLUDES   += -I$(WHERE_I_AM)/src
 INCLUDES   += -I$(WHERE_I_AM)/lib
-INCLUDES   += -I$(WHERE_I_AM)/lib/paho.mqtt.embedded-c/
-INCLUDES   += -I$(WHERE_I_AM)/lib/mbedtls/include/
+INCLUDES   += -I$(WHERE_I_AM)/lib/paho.mqtt.embedded-c
+INCLUDES   += -I$(WHERE_I_AM)/lib/mbedtls/include
+INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity
+INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity/include
+INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity/port/linux
 
 # Libraries to link
-LIBS = -L$(OUTPUT_PATH) -L$(WHERE_I_AM)/lib -lstdc++ -lm
+LIBS = -L$(OUTPUT_PATH) -L$(WHERE_I_AM)/lib -lstdc++ -lm -locf -ljansson
 
 # Wrap the include paths into the flags...
 CFLAGS += $() $(INCLUDES)
@@ -92,7 +96,7 @@ export CPP_FLAGS    = $(CFLAGS) -fno-rtti -fno-exceptions
 all: clean libs
 	@echo '======================================================'
 	$(MAKE) -C src/
-	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CFLAGS) -std=$(CPP_STANDARD) $(LIBS) $(OPTIMIZATION)
+	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CFLAGS) -std=$(CPP_STANDARD) $(LIBS) $(OPTIMIZATION) -DOC_CLIENT
 	$(SZ) $(FIRMWARE_NAME)
 
 debug: clean libs

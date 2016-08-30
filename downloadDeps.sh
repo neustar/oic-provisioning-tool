@@ -34,6 +34,11 @@ git clone https://github.com/ARMmbed/mbedtls.git lib/mbedtls
 # iotivity-constrained
 rm -rf lib/iotivity
 git clone https://gerrit.iotivity.org/gerrit/p/iotivity-constrained.git lib/iotivity
+# TinyCBOR...
+git clone https://github.com/01org/tinycbor.git lib/iotivity/deps/tinycbor
+
+
+#iotivity-constrained has a config file we want to override.
 
 # Return...
 cd ..

@@ -22,6 +22,7 @@ A program to provision OIC devices
 
 ## Building (everything)
 
+    ./downloadDeps.sh
     make
 
 ##### Or with debug symbols:

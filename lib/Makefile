@@ -55,7 +55,11 @@ OBJS  = $(SOURCES_C:.c=.o) $(SOURCES_CPP:.cpp=.o)
 LIBNAME = extraprotocols.a
 
 
+export SECURE=1
+
+
 all: $(LIBNAME)
+	$(MAKE) -C iotivity/port/linux
 	$(MAKE) -C mbedtls
 	cp -RP mbedtls/library/libmbedtls.*    $(OUTPUT_PATH)
 	cp -RP mbedtls/library/libmbedx509.*   $(OUTPUT_PATH)
@@ -75,3 +79,4 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(OUTPUT_PATH)/$(LIBNAME)
 	$(MAKE) clean -C mbedtls
+	$(MAKE) clean -C iotivity/port/linux
