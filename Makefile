@@ -85,9 +85,14 @@ LIBS += $(OUTPUT_PATH)/libmbedcrypto.a
 # Rules for building the program follow...
 ###########################################################################
 # Merge our choices and export them to the downstream Makefiles...
-CFLAGS += $(NEUDEV_OPTIONS)
+CFLAGS += $(NEUDEV_OPTIONS) -DMANUVR_OPENINTERCONNECT
+
 export CFLAGS
 export CPP_FLAGS    = $(CFLAGS) -fno-rtti -fno-exceptions
+
+# Tweak the environment for iotivity-constrained.
+export SECURE=1
+export DEBUG=1
 
 
 .PHONY: all

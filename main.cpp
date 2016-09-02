@@ -22,6 +22,7 @@ neudev application.
 #include "oc_api.h"
 #include "port/oc_signal_main_loop.h"
 
+#include <Platform/Platform.h>
 
 #define VERSION_STRING "0.0.1"
 
