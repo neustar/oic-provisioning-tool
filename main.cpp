@@ -6,25 +6,17 @@ Date:   2016.08.29
 neudev application.
 */
 
-// System-level includes.
-#include <inttypes.h>
-#include <sys/types.h>
-#include <sys/time.h>
-
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdio.h>
-#include <pthread.h>
-#include <signal.h>
-#include <unistd.h>
-
-#include "oc_api.h"
-#include "port/oc_signal_main_loop.h"
+#include <XenoSession/Console/ManuvrConsole.h>
+#include <Transports/ManuvrSocket/ManuvrTCP.h>
+#include <Transports/StandardIO/StandardIO.h>
 
 #include <Platform/Platform.h>
+#include <Kernel.h>
 
 #define VERSION_STRING "0.0.1"
+
+/* This global makes this source file read better. */
+Kernel* kernel = nullptr;
 
 char* program_name = nullptr;
 
@@ -39,12 +31,8 @@ int main(int argc, char *argv[]) {
   int   main_pid     = getpid();  // Our PID.
   program_name = argv[0];   // Name of running binary.
 
-  oc_handler_t handler = {.init = app_init,
-	  .get_credentials = fetch_credentials,
-	  .requests_entry = issue_requests
-  };
-
-  int init = oc_main_init(&handler);
+  platform.platformPreInit();
+  kernel = platform.kernel();
 
   // Parse through all the command line arguments and flags...
   // Please note that the order matters. Put all the most-general matches at the bottom of the loop.
@@ -54,8 +42,22 @@ int main(int argc, char *argv[]) {
       printf("%s v%s\n\n", argv[0], VERSION_STRING);
       exit(0);
     }
+    if ((strcasestr(argv[i], "--console")) || ((argv[i][0] == '-') && (argv[i][1] == 'c'))) {
+      // The user wants a local stdio "Shell".
+      #if defined(__MANUVR_CONSOLE_SUPPORT)
+        // TODO: Until smarter idea is finished, manually patch the transport
+        //         into a console session.
+        StandardIO* _console_xport = new StandardIO();
+        ManuvrConsole* _console = new ManuvrConsole((BufferPipe*) _console_xport);
+        kernel->subscribe((EventReceiver*) _console);
+        kernel->subscribe((EventReceiver*) _console_xport);
+      #else
+        printf("%s was compiled without any console support. Ignoring directive...\n", argv[0]);
+      #endif
+    }
   }
 
+  platform.bootstrap();
 
   /*
     Workflow:
@@ -88,8 +90,11 @@ int main(int argc, char *argv[]) {
 
 
   printf("%s (PID %u): Starting...\n", program_name, main_pid);
+  #if defined(RASPI) || defined(RASPI2)
+    gpioDefine(14, OUTPUT);
+  #endif
 
-  printf("%s", log.string());
-
-  exit(0);
+  while (1) {
+    kernel->procIdleFlags();
+  }
 }

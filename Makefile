@@ -2,13 +2,12 @@
 # Makefile for Neustar OIC provisioning tools.
 # Author: J. Ian Lindsay
 # Date:   2016.08.30
-#
 ###########################################################################
+FIRMWARE_NAME      = neudev
 
 OPTIMIZATION       = -O2
 C_STANDARD         = gnu99
 CPP_STANDARD       = gnu++11
-FIRMWARE_NAME      = neudev
 CFLAGS             = -Wall
 NEUDEV_OPTIONS     = -D_GNU_SOURCE
 
@@ -19,8 +18,9 @@ NEUDEV_OPTIONS     = -D_GNU_SOURCE
 SHELL          = /bin/sh
 WHERE_I_AM     = $(shell pwd)
 
-export CXX     = $(shell which g++)
 export CC      = $(shell which gcc)
+export CXX     = $(shell which g++)
+export AR      = $(shell which ar)
 export SZ      = $(shell which size)
 export MAKE    = $(shell which make)
 
@@ -31,35 +31,18 @@ export OUTPUT_PATH = $(WHERE_I_AM)/build/
 # Source files, includes, and linker directives...
 ###########################################################################
 INCLUDES    = -I$(WHERE_I_AM)/.
-INCLUDES   += -I$(WHERE_I_AM)/src
+INCLUDES   += -I$(WHERE_I_AM)/lib/ManuvrOS/ManuvrOS
 INCLUDES   += -I$(WHERE_I_AM)/lib
-INCLUDES   += -I$(WHERE_I_AM)/lib/paho.mqtt.embedded-c
 INCLUDES   += -I$(WHERE_I_AM)/lib/mbedtls/include
 INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity
 INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity/include
-INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity/port/linux
 
 # Libraries to link
-LIBS = -L$(OUTPUT_PATH) -L$(WHERE_I_AM)/lib -lstdc++ -lm -locf -ljansson
+LIBS = -L$(OUTPUT_PATH) -L$(WHERE_I_AM)/lib -lstdc++ -lm
 
 # Wrap the include paths into the flags...
-CFLAGS += $() $(INCLUDES)
+CFLAGS += $(INCLUDES)
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
-
-
-###########################################################################
-# Are we on a 64-bit system? If so, we'll need to specify
-#   that we want a 32-bit build...
-#
-# Thanks, estabroo...
-# http://www.linuxquestions.org/questions/programming-9/how-can-make-makefile-detect-64-bit-os-679513/
-###########################################################################
-LBITS = $(shell getconf LONG_BIT)
-ifeq ($(LBITS),64)
-	# This is no longer required on 64-bit platforms. But it is being retained in
-	#   case 32-bit problems need to be debugged.
-  #CFLAGS += -m32
-endif
 
 
 ###########################################################################
@@ -70,51 +53,66 @@ endif
 # This project has a single source file.
 CPP_SRCS  = main.cpp
 
-# mbedTLS will require this in order to use our chosen options.
-export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/mbedTLS_conf.h
+NEUDEV_OPTIONS += -D__MANUVR_LINUX
+NEUDEV_OPTIONS += -D__MANUVR_CONSOLE_SUPPORT
+NEUDEV_OPTIONS += -DMANUVR_STORAGE
+NEUDEV_OPTIONS += -DMANUVR_CBOR
+NEUDEV_OPTIONS += -DMANUVR_OPENINTERCONNECT
+NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
 
 # Since we are building on linux, we will have threading support via
 # pthreads.
-LIBS += -lpthread $(OUTPUT_PATH)/extraprotocols.a
+LIBS += -lmanuvr -lextras -lpthread
 LIBS += $(OUTPUT_PATH)/libmbedtls.a
 LIBS += $(OUTPUT_PATH)/libmbedx509.a
 LIBS += $(OUTPUT_PATH)/libmbedcrypto.a
+
+# Framework selections, if any are desired.
+ifeq ($(OIC_SERVER),1)
+	NEUDEV_OPTIONS += -DOC_SERVER
+else ifeq ($(OIC_CLIENT),1)
+	NEUDEV_OPTIONS += -DOC_CLIENT
+endif
+
+# Support for specific SBC hardware on linux.
+ifeq ($(BOARD),RASPI)
+NEUDEV_OPTIONS += -DRASPI
+export MANUVR_BOARD = RASPI
+endif
+
+# Debugging options...
+ifeq ($(DEBUG),1)
+NEUDEV_OPTIONS += -D__MANUVR_DEBUG
+NEUDEV_OPTIONS += -D__MANUVR_PIPE_DEBUG
+OPTIMIZATION    = -O0 -g
+export DEBUG=1
+endif
 
 
 ###########################################################################
 # Rules for building the program follow...
 ###########################################################################
 # Merge our choices and export them to the downstream Makefiles...
-CFLAGS += $(NEUDEV_OPTIONS) -DMANUVR_OPENINTERCONNECT
+CFLAGS += $(NEUDEV_OPTIONS) $(OPTIMIZATION)
 
 export CFLAGS
 export CPP_FLAGS    = $(CFLAGS) -fno-rtti -fno-exceptions
 
 # Tweak the environment for iotivity-constrained.
+export MANUVR_PLATFORM=LINUX
 export SECURE=1
-export DEBUG=1
-
+export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/mbedTLS_conf.h
 
 .PHONY: all
 
 
-all: clean libs
+all: libs
 	@echo '======================================================'
-	$(MAKE) -C src/
-	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CFLAGS) -std=$(CPP_STANDARD) $(LIBS) $(OPTIMIZATION) -DOC_CLIENT
+	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 	$(SZ) $(FIRMWARE_NAME)
-
-debug: clean libs
-	$(MAKE) debug -C src/
-	$(CXX) -static -g -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CFLAGS) -std=$(CPP_STANDARD) $(LIBS) -O0
-	$(SZ) $(FIRMWARE_NAME)
-
-tests: libs
-	$(CXX) -static -o tests tests/tests.cpp $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS) $(OPTIMIZATION)
-	$(CXX) -static -g -o tests-unoptimized tests/tests.cpp $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS) -O0
 
 examples: libs
-	$(CXX) -static -o lost-puppy examples/lost-puppy.cpp $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS) $(OPTIMIZATION)
+	$(CXX) -static -o lost-puppy examples/lost-puppy.cpp $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 
 builddir:
 	mkdir -p $(OUTPUT_PATH)
@@ -123,16 +121,8 @@ libs: builddir
 	$(MAKE) -C lib/
 
 clean:
-	$(MAKE) clean -C src/
 	rm -f *.o *.su *~ lost-puppy $(FIRMWARE_NAME)
-	rm -rf $(OUTPUT_PATH)
 
 fullclean: clean
+	rm -rf $(OUTPUT_PATH)
 	$(MAKE) clean -C lib/
-	rm -rf doc/doxygen
-
-docs:
-	doxygen Doxyfile
-
-stats:
-	find ./src -type f \( -name \*.cpp -o -name \*.h \) -exec wc -l {} +
