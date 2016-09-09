@@ -1,4 +1,4 @@
-# Filesystem andd editor artifacts
+# Filesystem and editor artifacts
 .directory
 *.gch
 
@@ -27,3 +27,6 @@
 *.exe
 *.out
 *.app
+
+lib/iotivity/
+lib/ManuvrOS/

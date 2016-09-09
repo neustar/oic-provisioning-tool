@@ -1,0 +1,6 @@
+.gitignore
+README.md
+doc/
+.git/
+lib/mbedtls/
+lib/ManuvrOS/

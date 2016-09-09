@@ -73,7 +73,7 @@ $(LIBNAME): externals $(OBJS)
 	cp -RP $(LIBS_TO_COPY) $(OUTPUT_PATH)
 
 externals:
-	$(MAKE) -C mbedtls/
+	$(MAKE) lib -C mbedtls/
 	$(MAKE) -C ManuvrOS/ManuvrOS/
 
 clean:
