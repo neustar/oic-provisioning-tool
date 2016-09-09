@@ -1,56 +1,63 @@
-# oic-provisioning-tool
-A program to provision OIC devices
+# Neudev and LostPuppy
+A pair of programs for OIC provisioning workflows.
+
+LostPuppy is an OIC device that is discoverable and unprovisioned. It exhibits the "just works" provisioning work-flow.
+
+Neudev is a tool for onboarding devices, and debugging low-level IoT issues.
 
 ----------------------
 
 #### What is in this repository:
-**./doc**:  Location for generated documentation.
-
-**./Docker**:  Docker files to generate optional build environments.
-
 **./lib**:  Third-party libraries required for a project.
 
-**./tests**:  Automated tests.
-
-**./examples**:  Example projects.
-
-**./buildEnvironments.sh**   A script to build the optional environments.
+**./src**:  The source for Neudev and LostPuppy.
 
 **./downloadDeps.sh**   A script to download build dependencies.
 
+**./Dockerfile**   Docker build of LostPuppy.
+
+
+
 ----------------------
 
-## Building (everything)
+## Building
+
+#### Neudev
+Debugging is presently a necessary build option to do anything useful with Neudev.
 
     ./downloadDeps.sh
-    make
+    make OIC_CLIENT=1 DEBUG=1
 
-##### Or with debug symbols:
+#### LostPuppy
+Debugging is presently a necessary build option.
 
-    make debug
+    ./downloadDeps.sh
+    make lostpuppy OIC_SERVER=1 DEBUG=1
 
-##### Automated tests:
+LostPuppy is also the purpose of the Dockerfile, which will build a ready-to-run instance of LostPuppy, along with all the UDP/TCP port breakouts required to talk to it.
 
-    make tests
-
-##### OCF devices:
-To test the various device provisioning schemes, I've built some proto-devices
-that have trivial functionality, but full security.
-
-  * lost-puppy       // "Just-works"
-
-    make devices
+    docker build .
 
 
 ----------------------
 
 ## Usage
-The provisioning tool is named neudev.
+The provisioning tool is named neudev. It can be used in interactive mode this way.
 
-    ./neudev --help
+    ./neudev --console
+
+Alternatively, it can be wrapped in an init script and used as a system service...
+
+    ./neudev &2 > 1
+
+In either case, it will open a TCP listening socket on 0.0.0.0:5685. Connecting to this socket will allow an external program to get updates about changes in the IoT environment.
+
+The interactive shell is due for rework, and so documentation on it will not be included here.
 
 ----------------------
 ## License
 Original code is covered by LICENSE.
 
 Code adapted from others' work inherits their license terms, which were preserved in the commentary where it applies.
+
+This program
