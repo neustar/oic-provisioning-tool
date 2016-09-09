@@ -34,10 +34,15 @@ Debugging is presently a necessary build option.
     ./downloadDeps.sh
     make lostpuppy OIC_SERVER=1 DEBUG=1
 
+Or, to build for Raspberry Pi (LED should be connected to GPIO pin 14):
+
+    ./downloadDeps.sh
+    make lostpuppy OIC_SERVER=1 DEBUG=1 BOARD=RASPI
+
+
 LostPuppy is also the purpose of the Dockerfile, which will build a ready-to-run instance of LostPuppy, along with all the UDP/TCP port breakouts required to talk to it.
 
     docker build .
-
 
 ----------------------
 
