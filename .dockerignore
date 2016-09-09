@@ -1,5 +1,6 @@
 .gitignore
 README.md
+LICENSE
 doc/
 .git/
 lib/mbedtls/

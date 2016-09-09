@@ -51,12 +51,13 @@ CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 #   I've at least tried to modularize to make the invariable transition less-painful.
 ###########################################################################
 # This project has a single source file.
-CPP_SRCS  = main.cpp
+CPP_SRCS  = src/main.cpp
 
 NEUDEV_OPTIONS += -D__MANUVR_LINUX
 NEUDEV_OPTIONS += -D__MANUVR_CONSOLE_SUPPORT
 NEUDEV_OPTIONS += -DMANUVR_STORAGE
 NEUDEV_OPTIONS += -DMANUVR_CBOR
+NEUDEV_OPTIONS += -DMANUVR_SUPPORT_TCPSOCKET
 NEUDEV_OPTIONS += -DMANUVR_OPENINTERCONNECT
 NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
 
@@ -66,13 +67,6 @@ LIBS += -lmanuvr -lextras -lpthread
 LIBS += $(OUTPUT_PATH)/libmbedtls.a
 LIBS += $(OUTPUT_PATH)/libmbedx509.a
 LIBS += $(OUTPUT_PATH)/libmbedcrypto.a
-
-# Framework selections, if any are desired.
-ifeq ($(OIC_SERVER),1)
-	NEUDEV_OPTIONS += -DOC_SERVER
-else ifeq ($(OIC_CLIENT),1)
-	NEUDEV_OPTIONS += -DOC_CLIENT
-endif
 
 # Support for specific SBC hardware on linux.
 ifeq ($(BOARD),RASPI)
@@ -86,6 +80,13 @@ NEUDEV_OPTIONS += -D__MANUVR_DEBUG
 NEUDEV_OPTIONS += -D__MANUVR_PIPE_DEBUG
 OPTIMIZATION    = -O0 -g
 export DEBUG=1
+endif
+
+# Framework selections, if any are desired.
+ifeq ($(OIC_SERVER),1)
+	NEUDEV_OPTIONS += -DOC_SERVER -DOC_SECURITY
+else ifeq ($(OIC_CLIENT),1)
+	NEUDEV_OPTIONS += -DOC_CLIENT -DOC_SECURITY
 endif
 
 
@@ -107,12 +108,11 @@ export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/lib/mbedTLS_conf.h
 
 
 all: libs
-	@echo '======================================================'
-	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) -DOC_CLIENT $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 	$(SZ) $(FIRMWARE_NAME)
 
-examples: libs
-	$(CXX) -static -o lost-puppy examples/lost-puppy.cpp $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+lostpuppy: libs
+	$(CXX) -static -o LostPuppy src/lost-puppy.cpp -DOC_SERVER $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 
 builddir:
 	mkdir -p $(OUTPUT_PATH)
@@ -121,7 +121,7 @@ libs: builddir
 	$(MAKE) -C lib/
 
 clean:
-	rm -f *.o *.su *~ lost-puppy $(FIRMWARE_NAME)
+	rm -f *.o *.su *~ LostPuppy $(FIRMWARE_NAME)
 
 fullclean: clean
 	rm -rf $(OUTPUT_PATH)

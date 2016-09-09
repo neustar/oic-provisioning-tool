@@ -28,5 +28,6 @@
 *.out
 *.app
 
+lib/mbedtls/
 lib/iotivity/
 lib/ManuvrOS/

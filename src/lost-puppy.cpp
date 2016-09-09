@@ -1,9 +1,9 @@
 /*
-File:   main.cpp
+File:   lost-puppy.cpp
 Author: J. Ian Lindsay
 Date:   2016.08.29
 
-neudev application.
+LostPuppy demo device
 */
 
 #include <XenoSession/Console/ManuvrConsole.h>
@@ -20,9 +20,18 @@ Kernel* kernel = nullptr;
 
 char* program_name = nullptr;
 
+
 /*******************************************************************************
-* Functions that just print things.                                            *
+* BufferPipe strategies particular to this firmware.                           *
 *******************************************************************************/
+#if defined(__MANUVR_CONSOLE_SUPPORT) && defined(MANUVR_SUPPORT_TCPSOCKET)
+BufferPipe* _pipe_factory_2(BufferPipe* _n, BufferPipe* _f) {
+  ManuvrConsole* _console = new ManuvrConsole(_n);
+  kernel->subscribe(_console);
+  return (BufferPipe*) _console;
+}
+#endif
+
 
 /*******************************************************************************
 * The main function.                                                           *
@@ -49,8 +58,8 @@ int main(int argc, char *argv[]) {
         //         into a console session.
         StandardIO* _console_xport = new StandardIO();
         ManuvrConsole* _console = new ManuvrConsole((BufferPipe*) _console_xport);
-        kernel->subscribe((EventReceiver*) _console);
-        kernel->subscribe((EventReceiver*) _console_xport);
+        kernel->subscribe((EventReceiver*) _console, 3);
+        kernel->subscribe((EventReceiver*) _console_xport, 3);
       #else
         printf("%s was compiled without any console support. Ignoring directive...\n", argv[0]);
       #endif
@@ -94,7 +103,17 @@ int main(int argc, char *argv[]) {
     gpioDefine(14, OUTPUT);
   #endif
 
+  #if defined(MANUVR_SUPPORT_TCPSOCKET)
+    #if defined(__MANUVR_CONSOLE_SUPPORT)
+      // Setup TCP socket for console.
+      //ManuvrTCP console_srv((const char*) "0.0.0.0", 5686);
+      //kernel->subscribe(&console_srv);
+      //console_srv.listen();
+    #endif  //__MANUVR_CONSOLE_SUPPORT
+  #endif  //MANUVR_SUPPORT_TCPSOCKET
+
   while (1) {
+    // Run forever.
     kernel->procIdleFlags();
   }
 }
