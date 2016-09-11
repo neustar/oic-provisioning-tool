@@ -36,36 +36,11 @@ BufferPipe* _pipe_factory_2(BufferPipe* _n, BufferPipe* _f) {
 /*******************************************************************************
 * The main function.                                                           *
 *******************************************************************************/
-int main(int argc, char *argv[]) {
-  int   main_pid     = getpid();  // Our PID.
-  program_name = argv[0];   // Name of running binary.
-
-  platform.platformPreInit();
+int main(int argc, const char *argv[]) {
+  printf("%s (PID %u): Starting...\n", argv[0], getpid());
+  Argument* opts = parseFromArgCV(argc, argv);
+  platform.platformPreInit(opts);
   kernel = platform.kernel();
-
-  // Parse through all the command line arguments and flags...
-  // Please note that the order matters. Put all the most-general matches at the bottom of the loop.
-  for (int i = 1; i < argc; i++) {
-    if ((strcasestr(argv[i], "--version")) || ((argv[i][0] == '-') && (argv[i][1] == 'v'))) {
-      // Print the version and quit.
-      printf("%s v%s\n\n", argv[0], VERSION_STRING);
-      exit(0);
-    }
-    if ((strcasestr(argv[i], "--console")) || ((argv[i][0] == '-') && (argv[i][1] == 'c'))) {
-      // The user wants a local stdio "Shell".
-      #if defined(__MANUVR_CONSOLE_SUPPORT)
-        // TODO: Until smarter idea is finished, manually patch the transport
-        //         into a console session.
-        StandardIO* _console_xport = new StandardIO();
-        ManuvrConsole* _console = new ManuvrConsole((BufferPipe*) _console_xport);
-        kernel->subscribe((EventReceiver*) _console, 3);
-        kernel->subscribe((EventReceiver*) _console_xport, 3);
-      #else
-        printf("%s was compiled without any console support. Ignoring directive...\n", argv[0]);
-      #endif
-    }
-  }
-
   platform.bootstrap();
 
   /*
@@ -98,7 +73,6 @@ int main(int argc, char *argv[]) {
   */
 
 
-  printf("%s (PID %u): Starting...\n", program_name, main_pid);
   #if defined(RASPI) || defined(RASPI2)
     gpioDefine(14, OUTPUT);
   #endif
