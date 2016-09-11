@@ -5,7 +5,7 @@
 ###########################################################################
 FIRMWARE_NAME      = neudev
 
-OPTIMIZATION       = -O2
+OPTIMIZATION       = -O1
 C_STANDARD         = gnu99
 CPP_STANDARD       = gnu++11
 CFLAGS             = -Wall

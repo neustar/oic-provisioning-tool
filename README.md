@@ -22,22 +22,27 @@ Neudev is a tool for onboarding devices, and debugging low-level IoT issues.
 
 ## Building
 
+Regardless of tool, you can pass the DEBUG build flag to make...
+
+    make DEBUG=1
+
+...to enable more console output and other less-common runtime features.    
+
 #### Neudev
-Debugging is presently a necessary build option to do anything useful with Neudev.
 
     ./downloadDeps.sh
-    make OIC_CLIENT=1 DEBUG=1
+    make OIC_CLIENT=1
 
 #### LostPuppy
 Debugging is presently a necessary build option.
 
     ./downloadDeps.sh
-    make lostpuppy OIC_SERVER=1 DEBUG=1
+    make lostpuppy OIC_SERVER=1
 
 Or, to build for Raspberry Pi (LED should be connected to GPIO pin 14):
 
     ./downloadDeps.sh
-    make lostpuppy OIC_SERVER=1 DEBUG=1 BOARD=RASPI
+    make lostpuppy OIC_SERVER=1 BOARD=RASPI
 
 
 LostPuppy is also the purpose of the Dockerfile, which will build a ready-to-run instance of LostPuppy, along with all the UDP/TCP port breakouts required to talk to it.
