@@ -29,7 +29,8 @@ extern "C" {
 
   static void set_device_custom_property(void *data) {
     // TODO: There *has* to be a better way.
-    setPin(14, !readPin(14));
+    light_state = !light_state;
+    setPin(14, light_state);
   }
 
 
@@ -137,6 +138,8 @@ LostPuppy::~LostPuppy() {
 int8_t LostPuppy::bootComplete() {
   EventReceiver::bootComplete();
   gpioDefine(14, OUTPUT);
+  light_state = false;
+  setPin(14, light_state);  // We will assume there is no inversion in hardware.
   return 1;
 }
 

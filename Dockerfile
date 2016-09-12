@@ -18,10 +18,10 @@ COPY Makefile Makefile
 
 RUN chmod +x /root/downloadDeps.sh && /root/downloadDeps.sh
 
-ENV SECURE=1 DEBUG=1 OIC_SERVER=1
+ENV DEBUG=1 OIC_SERVER=1
 
 # TODO: Would rather use ENV...
-RUN make lostpuppy SECURE=1 DEBUG=1 OIC_SERVER=1
+RUN make lostpuppy DEBUG=1 OIC_SERVER=1
 
 # UDP 5683: coap
 # UDP 5684: coaps
@@ -29,5 +29,5 @@ RUN make lostpuppy SECURE=1 DEBUG=1 OIC_SERVER=1
 # TCP 5686: Console (Use netcat)
 EXPOSE 5683 5684 5685 5686
 
-ENTRYPOINT ["/root/LostPuppy"]
+ENTRYPOINT ["/root/lostpuppy"]
 CMD ["--console"]

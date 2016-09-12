@@ -78,10 +78,6 @@ int main(int argc, const char *argv[]) {
     TODO: Close the DTLS session.
   */
 
-  #if defined(RASPI) || defined(RASPI2)
-    gpioDefine(14, OUTPUT);
-  #endif
-
   #if defined(MANUVR_SUPPORT_TCPSOCKET)
     #if defined(__MANUVR_CONSOLE_SUPPORT)
       // Setup TCP socket for console.

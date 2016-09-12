@@ -60,6 +60,7 @@ NEUDEV_OPTIONS += -DMANUVR_CBOR
 NEUDEV_OPTIONS += -DMANUVR_SUPPORT_TCPSOCKET
 NEUDEV_OPTIONS += -DMANUVR_OPENINTERCONNECT
 NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
+NEUDEV_OPTIONS += -D__MANUVR_MBEDTLS
 NEUDEV_OPTIONS += -DOC_SECURITY
 
 # Since we are building on linux, we will have threading support via
@@ -117,7 +118,7 @@ all: libs
 	$(SZ) $(FIRMWARE_NAME)
 
 lostpuppy: libs
-	$(CXX) -static -o LostPuppy $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+	$(CXX) -static -o lostpuppy $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 
 builddir:
 	mkdir -p $(OUTPUT_PATH)
@@ -126,7 +127,7 @@ libs: builddir
 	$(MAKE) -C lib/
 
 clean:
-	rm -f *.o *.su *~ LostPuppy $(FIRMWARE_NAME)
+	rm -f *.o *.su *~ lostpuppy $(FIRMWARE_NAME)
 
 fullclean: clean
 	rm -rf $(OUTPUT_PATH)
