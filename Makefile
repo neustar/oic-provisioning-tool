@@ -87,6 +87,7 @@ ifeq ($(OIC_SERVER),1)
 	NEUDEV_OPTIONS += -DOC_SERVER -DOC_SECURITY
 else ifeq ($(OIC_CLIENT),1)
 	NEUDEV_OPTIONS += -DOC_CLIENT -DOC_SECURITY
+	CPP_SRCS += src/Provisioner/Provisioner.cpp
 endif
 
 

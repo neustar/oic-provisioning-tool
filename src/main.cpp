@@ -13,6 +13,8 @@ neudev application.
 #include <Platform/Platform.h>
 #include <Kernel.h>
 
+#include "Provisioner/Provisioner.h"
+
 #define VERSION_STRING "0.0.1"
 
 /* This global makes this source file read better. */
@@ -42,6 +44,9 @@ int main(int argc, const char *argv[]) {
   platform.platformPreInit(opts);
   kernel = platform.kernel();
   platform.bootstrap();
+
+  Provisioner prov_module(opts);
+  kernel->subscribe(&prov_module);
 
   /*
     Workflow:
