@@ -43,7 +43,7 @@ is a general reflection of the capabilities of the running firmware. My build lo
              5: Provisioner      // The module that handles provisioning logic.
              6: ManuvrTCP        // The TCP server for reporting events.
 
-This constellation of modules is what makes this program what it is. The module at index 6 is what differentiates it from LostPuppy. LostPuppy will have a different module, with different options, that reacts to events in the other modules differently.
+This constellation of modules is what makes this program what it is. The module at index 5 is what differentiates it from LostPuppy. LostPuppy will have a different module, with different options, that reacts to events in the other modules differently.
 
 The console gives commands to modules by index, with index 0 being the default. IE, these two commands have the same effect.
 
