@@ -43,10 +43,11 @@ int main(int argc, const char *argv[]) {
   Argument* opts = parseFromArgCV(argc, argv);
   platform.platformPreInit(opts);
   kernel = platform.kernel();
-  platform.bootstrap();
 
   Provisioner prov_module(opts);
   kernel->subscribe(&prov_module);
+
+  platform.bootstrap();
 
   /*
     Workflow:
@@ -77,10 +78,6 @@ int main(int argc, const char *argv[]) {
     TODO: Close the DTLS session.
   */
 
-
-  #if defined(RASPI) || defined(RASPI2)
-    gpioDefine(14, OUTPUT);
-  #endif
 
   #if defined(MANUVR_SUPPORT_TCPSOCKET)
     // Setup TCP socket for results.

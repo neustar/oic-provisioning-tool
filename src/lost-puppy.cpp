@@ -13,6 +13,8 @@ LostPuppy demo device
 #include <Platform/Platform.h>
 #include <Kernel.h>
 
+#include "LostPuppy/LostPuppy.h"
+
 #define VERSION_STRING "0.0.1"
 
 /* This global makes this source file read better. */
@@ -36,11 +38,15 @@ BufferPipe* _pipe_factory_2(BufferPipe* _n, BufferPipe* _f) {
 /*******************************************************************************
 * The main function.                                                           *
 *******************************************************************************/
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   printf("%s (PID %u): Starting...\n", argv[0], getpid());
   Argument* opts = parseFromArgCV(argc, argv);
   platform.platformPreInit(opts);
   kernel = platform.kernel();
+
+  LostPuppy lost_puppy(opts);
+  kernel->subscribe(&lost_puppy);
+
   platform.bootstrap();
 
   /*

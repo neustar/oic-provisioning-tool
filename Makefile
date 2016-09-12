@@ -51,7 +51,7 @@ CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 #   I've at least tried to modularize to make the invariable transition less-painful.
 ###########################################################################
 # This project has a single source file.
-CPP_SRCS  = src/main.cpp
+CPP_SRCS  =
 
 NEUDEV_OPTIONS += -D__MANUVR_LINUX
 NEUDEV_OPTIONS += -D__MANUVR_CONSOLE_SUPPORT
@@ -60,6 +60,7 @@ NEUDEV_OPTIONS += -DMANUVR_CBOR
 NEUDEV_OPTIONS += -DMANUVR_SUPPORT_TCPSOCKET
 NEUDEV_OPTIONS += -DMANUVR_OPENINTERCONNECT
 NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
+NEUDEV_OPTIONS += -DOC_SECURITY
 
 # Since we are building on linux, we will have threading support via
 # pthreads.
@@ -84,9 +85,12 @@ endif
 
 # Framework selections, if any are desired.
 ifeq ($(OIC_SERVER),1)
-	NEUDEV_OPTIONS += -DOC_SERVER -DOC_SECURITY
+	NEUDEV_OPTIONS += -DOC_SERVER
+	CPP_SRCS += src/lost-puppy.cpp
+	CPP_SRCS += src/LostPuppy/LostPuppy.cpp
 else ifeq ($(OIC_CLIENT),1)
-	NEUDEV_OPTIONS += -DOC_CLIENT -DOC_SECURITY
+	NEUDEV_OPTIONS += -DOC_CLIENT
+	CPP_SRCS += src/main.cpp
 	CPP_SRCS += src/Provisioner/Provisioner.cpp
 endif
 
@@ -109,11 +113,11 @@ export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/lib/mbedTLS_conf.h
 
 
 all: libs
-	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) -DOC_CLIENT $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 	$(SZ) $(FIRMWARE_NAME)
 
 lostpuppy: libs
-	$(CXX) -static -o LostPuppy src/lost-puppy.cpp -DOC_SERVER $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+	$(CXX) -static -o LostPuppy $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
 
 builddir:
 	mkdir -p $(OUTPUT_PATH)

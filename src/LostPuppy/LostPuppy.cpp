@@ -1,22 +1,16 @@
 /*
-File:   Provisioner.cpp
+File:   LostPuppy.cpp
 Author: J. Ian Lindsay
 Date:   2016.09.10
 
 */
 
 
-#if defined(OC_CLIENT) && defined(MANUVR_OPENINTERCONNECT)
-#include "Provisioner.h"
+#if defined(OC_SERVER) && defined(MANUVR_OPENINTERCONNECT)
+#include "LostPuppy.h"
 #include <Platform/Platform.h>
 
 //ManuvrOIC::INSTANCE
-
-extern "C" {
-  //#include "oc_api.h"
-  //#include "port/oc_signal_main_loop.h"
-  //#include "port/oc_connectivity.h"
-} // extern "C"
 
 
 /*******************************************************************************
@@ -30,6 +24,61 @@ extern "C" {
 * Static members and initializers should be located here.
 *******************************************************************************/
 
+extern "C" {
+  static bool light_state = false;
+
+  static void set_device_custom_property(void *data) {
+    // TODO: There *has* to be a better way.
+    setPin(14, !readPin(14));
+  }
+
+
+  static void put_light(oc_request_t *request, oc_interface_mask_t interface) {
+    Kernel::log("PUT_light:\n");
+    bool state = false;
+    oc_rep_t *rep = request->request_payload;
+    while(rep != NULL) {
+      PRINT("key: %s ", oc_string(rep->name));
+      switch(rep->type) {
+        case BOOL:
+          state = rep->value_boolean;
+          break;
+        default:
+          oc_send_response(request, OC_STATUS_BAD_REQUEST);
+          return;
+          break;
+      }
+      rep = rep->next;
+    }
+    light_state = state;
+    Kernel::log(light_state ? "value: ON\n" : "value: OFF\n");
+    setPin(14, light_state);
+    oc_send_response(request, OC_STATUS_CHANGED);
+  }
+
+
+  static void get_light(oc_request_t *request, oc_interface_mask_t interface) {
+    Kernel::log("GET_light:\n");
+    // TODO: Strip and re-write all use of macros to executable code.
+    //       Debugging preprocessor macros is a waste of life.
+    CborEncoder g_encoder, _rmap;
+    CborError g_err;
+    cbor_encoder_create_map(&g_encoder, &_rmap, CborIndefiniteLength);
+    switch (interface) {
+      case OC_IF_BASELINE:
+        oc_process_baseline_interface(request->resource);
+      case OC_IF_RW:
+        cbor_encode_text_string(&_rmap, "state", strlen("state"));
+        cbor_encode_boolean(&_rmap, light_state);
+        break;
+      default:
+        break;
+    }
+    oc_send_response(request, OC_STATUS_OK);
+    Kernel::log(light_state ? "Light: ON\n" : "Light: OFF\n");
+  }
+} // extern "C"
+
 
 /*******************************************************************************
 *   ___ _              ___      _ _              _      _
@@ -42,8 +91,8 @@ extern "C" {
 /**
 * Vanilla constructor.
 */
-Provisioner::Provisioner() : EventReceiver() {
-  setReceiverName("Provisioner");
+LostPuppy::LostPuppy() : EventReceiver() {
+  setReceiverName("LostPuppy");
 }
 
 
@@ -52,7 +101,7 @@ Provisioner::Provisioner() : EventReceiver() {
 *
 * @param   Argument* root_config
 */
-Provisioner::Provisioner(Argument* root_config) : Provisioner() {
+LostPuppy::LostPuppy(Argument* root_config) : LostPuppy() {
   erConfigure(root_config);
 }
 
@@ -60,7 +109,7 @@ Provisioner::Provisioner(Argument* root_config) : Provisioner() {
 /**
 * Unlike many of the other EventReceivers, THIS one needs to be able to be torn down.
 */
-Provisioner::~Provisioner() {
+LostPuppy::~LostPuppy() {
 }
 
 
@@ -85,8 +134,9 @@ Provisioner::~Provisioner() {
 *
 * @return 0 on no action, 1 on action, -1 on failure.
 */
-int8_t Provisioner::bootComplete() {
+int8_t LostPuppy::bootComplete() {
   EventReceiver::bootComplete();
+  gpioDefine(14, OUTPUT);
   return 1;
 }
 
@@ -96,17 +146,13 @@ int8_t Provisioner::bootComplete() {
 *
 * @return 0 on no action, 1 on action, -1 on failure.
 */
-int8_t Provisioner::erConfigure(Argument* opts) {
+int8_t LostPuppy::erConfigure(Argument* opts) {
   int8_t return_value = 0;
-  Argument* temp = opts->retrieveArgByKey("relay_devs");
+  Argument* temp = opts->retrieveArgByKey("some_runtime_key");
   if (temp) {
     // TODO: Need a better way to do this.
     uint8_t val = 0;
     if ((0 == temp->getValueAs(&val)) && (0 != val)) {
-      if (!relayDiscovery()) {
-        relayDiscovery(true);
-        return_value++;
-      }
     }
   }
   return return_value;
@@ -127,7 +173,7 @@ int8_t Provisioner::erConfigure(Argument* opts) {
 * @param  event  The event for which service has been completed.
 * @return A callback return code.
 */
-int8_t Provisioner::callback_proc(ManuvrRunnable *event) {
+int8_t LostPuppy::callback_proc(ManuvrRunnable *event) {
   /* Setup the default return code. If the event was marked as mem_managed, we return a DROP code.
      Otherwise, we will return a REAP code. Downstream of this assignment, we might choose differently. */
   int8_t return_value = event->kernelShouldReap() ? EVENT_CALLBACK_RETURN_REAP : EVENT_CALLBACK_RETURN_DROP;
@@ -142,27 +188,27 @@ int8_t Provisioner::callback_proc(ManuvrRunnable *event) {
 }
 
 
-int8_t Provisioner::notify(ManuvrRunnable *active_event) {
+int8_t LostPuppy::notify(ManuvrRunnable *active_event) {
   int8_t return_value = 0;
   Argument* args = active_event->getArgs();
 
   switch (active_event->eventCode()) {
-    case MANUVR_MSG_OIC_DISCOVERY:
-      if (args) {
-        StringBuilder* str;
-        if (0 == args->getValueAs(&str)) {
-          local_log.concat("Discovered new device:\t");
-          local_log.concatHandoff(str);
-          return_value++;
-          if (relayDiscovery()) {
-            // TODO: Send to connected TCP clients.
-          }
-        }
-      }
+    case MANUVR_MSG_OIC_REG_RESOURCES:
+      res = oc_new_resource("/light/1", 1, 0);
+      oc_resource_bind_resource_type(res, "oic.r.light");
+      oc_resource_bind_resource_interface(res, OC_IF_RW);
+      oc_resource_set_default_interface(res, OC_IF_RW);
+      oc_resource_make_secure(res);
+      oc_resource_set_discoverable(res);
+      oc_resource_set_periodic_observable(res, 1);
+      oc_resource_set_request_handler(res, OC_GET, get_light);
+      oc_resource_set_request_handler(res, OC_PUT, put_light);
+      oc_add_resource(res);
+      return_value++;
       break;
     case MANUVR_MSG_OIC_READY:
       oc_init_platform(IDENTITY_STRING, NULL, NULL);
-      oc_add_device("/oic/d", "oic.d.phone", "Client", "1.0", "1.0", NULL, NULL);
+      oc_add_device("/oic/d", "oic.d.light", "Light", "1.0", "1.0", set_device_custom_property, NULL);
       return_value++;
       break;
     default:
@@ -180,22 +226,20 @@ int8_t Provisioner::notify(ManuvrRunnable *active_event) {
 *
 * @param   StringBuilder* The buffer into which this fxn should write its output.
 */
-void Provisioner::printDebug(StringBuilder *output) {
+void LostPuppy::printDebug(StringBuilder *output) {
   EventReceiver::printDebug(output);
-  if (_desired_owner) {
+  if (_owner) {
     output->concat("-- Owner info:\n");
-    _desired_owner->toString(output);
+    _owner->toString(output);
   }
   else {
-    output->concat("-- No owner.\n");
+    output->concat("-- No owner (*arf*).\n");
   }
-  output->concatf("-- Provisioning:        %s\n", (isProvisioning() ? "yes" : "no"));
-  output->concatf("-- Relay new devices:   %s\n", (relayDiscovery() ? "yes" : "no"));
 }
 
 
 #if defined(__MANUVR_CONSOLE_SUPPORT)
-void Provisioner::procDirectDebugInstruction(StringBuilder *input) {
+void LostPuppy::procDirectDebugInstruction(StringBuilder *input) {
   char* str = input->position(0);
   char c    = *(str);
 

@@ -28,6 +28,12 @@ This is the asynchronous, automated tool to provision OIC devices.
 #define OIC_PROV_FLAG_RESERVED_0       0x80    //
 
 
+typedef struct {
+  StringBuilder uri;
+  bool  owned;
+  bool  secured;
+} KnownLocalDev;
+
 class Provisioner : public EventReceiver {
   public:
     Provisioner();
@@ -53,6 +59,10 @@ class Provisioner : public EventReceiver {
 
   private:
     Identity* _desired_owner = nullptr;
+
+    /* A map of things we've found nearby... */
+    // TODO: Format for now is UUID/URI
+    std::map<UUID*, KnownLocalDev*> _noticed_devs;
 
 
     inline void isProvisioning(bool nu) {  _er_set_flag(OIC_PROV_FLAG_PROVISIONING, nu);    };
