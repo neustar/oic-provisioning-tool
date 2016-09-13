@@ -1,10 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "ManuvrConf.h"
+
 /* Time resolution */
 #include <stdint.h>
 typedef uint64_t oc_clock_time_t;
-#define OC_CLOCK_CONF_SECOND (1000)
+#define OC_CLOCK_CONF_TICKS_PER_SECOND (1000 / MANUVR_PLATFORM_TIMER_PERIOD_MS)
 
 #define OC_BYTES_POOL_SIZE (2048)
 #define OC_INTS_POOL_SIZE (16)

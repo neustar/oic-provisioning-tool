@@ -53,6 +53,7 @@ Provisioner::Provisioner() : EventReceiver() {
 * @param   Argument* root_config
 */
 Provisioner::Provisioner(Argument* root_config) : Provisioner() {
+  erConfigure(root_config);
 }
 
 
@@ -79,6 +80,7 @@ int8_t Provisioner::queryDeviceDoxm(Argument* dev_args) {
         if (0 == dev_args->getValueAs("di", &di)) {
           if (0 == dev_args->getValueAs("ip6_port", &ip6_port)) {
             if (0 == dev_args->getValueAs("r_flags", &flags)) {
+              // Build an endpoint definition for OIC and start the query.
               return 0;
             }
           }
@@ -154,7 +156,8 @@ int8_t Provisioner::erConfigure(Argument* opts) {
                   src_len
                 );
       if (0 == ret) {
-        // We have a buffer to feed to CBOR.
+        // We have a buffer to feed to CBOR. We expect this to be an OIC1.1
+        //   cred entry sufficient to establish ownership.
         printf("B64 Decode succeeded.\n");
       }
       else {
