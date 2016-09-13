@@ -53,7 +53,6 @@ Provisioner::Provisioner() : EventReceiver() {
 * @param   Argument* root_config
 */
 Provisioner::Provisioner(Argument* root_config) : Provisioner() {
-  erConfigure(root_config);
 }
 
 
@@ -63,6 +62,33 @@ Provisioner::Provisioner(Argument* root_config) : Provisioner() {
 Provisioner::~Provisioner() {
 }
 
+
+
+int8_t Provisioner::queryDeviceDoxm(Argument* dev_args) {
+  StringBuilder* ip6_addr = nullptr;
+  StringBuilder* uri      = nullptr;
+  StringBuilder* di       = nullptr;
+  uint16_t ip6_port       = 0;
+  uint8_t  flags          = 0;
+  dev_args->printDebug(&local_log);
+
+  if (dev_args->retrieveArgByKey("secure")) {
+    Kernel::log("Found secure device. Proceeding to query its doxm...\n");
+    if (0 == dev_args->getValueAs("ip6_addr", &ip6_addr)) {
+      if (0 == dev_args->getValueAs("uri", &uri)) {
+        if (0 == dev_args->getValueAs("di", &di)) {
+          if (0 == dev_args->getValueAs("ip6_port", &ip6_port)) {
+            if (0 == dev_args->getValueAs("r_flags", &flags)) {
+              return 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return -1;
+}
 
 
 /****************************************************************************************************
@@ -109,6 +135,40 @@ int8_t Provisioner::erConfigure(Argument* opts) {
       }
     }
   }
+
+  temp = opts->retrieveArgByKey("owner");
+  if (temp) {
+    char* buf;
+    if (0 == temp->getValueAs(&buf)) {
+      // We have an option passed for identity. Let's try to decode it...
+      // Since we are decoding, the length of the result will always be smaller
+      //   than the length of the input. So no guess-work here.
+      int src_len = strlen(buf);
+      uint8_t* cbor_buf = (uint8_t*) alloca(src_len);
+      size_t result_len = 0;
+      int ret = mbedtls_base64_decode(
+                  cbor_buf,
+                  src_len,
+                  &result_len,
+                  (const unsigned char*) buf,
+                  src_len
+                );
+      if (0 == ret) {
+        // We have a buffer to feed to CBOR.
+        printf("B64 Decode succeeded.\n");
+      }
+      else {
+        printf("B64 Decode failed.\n");
+      }
+    }
+    else {
+      printf("Failed to get base64 data.\n");
+    }
+  }
+  opts->printDebug(&local_log);
+  printf("Provisioner::erConfigure()\n%s\n", (const char*) local_log.string());
+
+  flushLocalLog();
   return return_value;
 }
 
@@ -149,15 +209,16 @@ int8_t Provisioner::notify(ManuvrRunnable *active_event) {
   switch (active_event->eventCode()) {
     case MANUVR_MSG_OIC_DISCOVERY:
       if (args) {
-        StringBuilder* str;
-        if (0 == args->getValueAs(&str)) {
-          local_log.concat("Discovered new device:\t");
-          local_log.concatHandoff(str);
-          return_value++;
-          if (relayDiscovery()) {
-            // TODO: Send to connected TCP clients.
-          }
-        }
+        // Detach the Argument from the message. We need to keep it.
+        queryDeviceDoxm(active_event->takeArgs());
+        //if (0 == args->getValueAs(&str)) {
+        //  local_log.concat("Discovered new device:\t");
+        //  local_log.concatHandoff(str);
+        //  if (relayDiscovery()) {
+        //    // TODO: Send to connected TCP clients.
+        //  }
+        //}
+        return_value++;
       }
       break;
     case MANUVR_MSG_OIC_READY:

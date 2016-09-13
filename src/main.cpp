@@ -11,6 +11,7 @@ neudev application.
 #include <Transports/StandardIO/StandardIO.h>
 
 #include <Platform/Platform.h>
+#include <Platform/Cryptographic.h>
 #include <Kernel.h>
 
 #include "Provisioner/Provisioner.h"
@@ -41,6 +42,7 @@ BufferPipe* _pipe_factory_2(BufferPipe* _n, BufferPipe* _f) {
 int main(int argc, const char *argv[]) {
   printf("%s (PID %u): Starting...\n", argv[0], getpid());
   Argument* opts = parseFromArgCV(argc, argv);
+
   platform.platformPreInit(opts);
   kernel = platform.kernel();
 
@@ -51,7 +53,7 @@ int main(int argc, const char *argv[]) {
 
   /*
     Workflow:
-    TODO: The tool will be handed an IP/port, and a set of acceptable credentials to set for ownership.
+    TODO: The tool will be handed credentials to set for ownership.
     -----------------------
     TODO: The OBT queries to see if the new device is not yet owned.
     TODO: The new device returns the /oic/sec/doxm resource containing ownership, supported owner transfer methods and supported credential types.

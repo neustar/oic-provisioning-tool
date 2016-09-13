@@ -67,6 +67,8 @@ class Provisioner : public EventReceiver {
 
     inline void isProvisioning(bool nu) {  _er_set_flag(OIC_PROV_FLAG_PROVISIONING, nu);    };
     inline void relayDiscovery(bool nu) {  _er_set_flag(OIC_PROV_FLAG_RELAY_DISCOVERY, nu); };
+
+    int8_t queryDeviceDoxm(Argument*);
 };
 
 #endif   // __NEUSTAR_IOT_PROVISIONER_H__
