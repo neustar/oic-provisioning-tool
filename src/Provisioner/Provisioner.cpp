@@ -12,6 +12,8 @@ Date:   2016.09.10
 
 //ManuvrOIC::INSTANCE
 
+#include "deps/tinycbor/src/cbor.h"
+
 extern "C" {
   //#include "oc_api.h"
   //#include "port/oc_signal_main_loop.h"
@@ -29,6 +31,93 @@ extern "C" {
 *
 * Static members and initializers should be located here.
 *******************************************************************************/
+// TODO: This is an ugly kludge for now.
+PriorityQueue<Argument*> _known_devices;
+
+Argument* locateRequest(oc_client_response_t* resp) {
+  if (_known_devices.size() == 1) {
+    // TODO: Wrong.
+    return _known_devices.get();
+  }
+  return nullptr;
+}
+
+
+void get_doxm_callback(oc_client_response_t* data) {
+  Argument* intial_req = locateRequest(data);
+  if (intial_req) {
+    if (OC_STATUS_OK == data->code) {
+      // Now, we should set pstat to allow write operations to doxm.
+      //if (oc_init_post("", &light_server, NULL, &post2_light, LOW_QOS)) {
+      //  oc_rep_start_root_object();
+      //  oc_rep_set_int(root, power, 55);
+      //  oc_rep_end_root_object();
+      //}
+      //else {
+      //  Kernel::log("get_doxm_callback(): Could not init POST.\n");
+      //}
+      Kernel::log("get_doxm_callback(): doxm returned.\n");
+    }
+    else {
+      Kernel::log("get_doxm_callback(): Unacceptable status code.\n");
+    }
+    delete intial_req;
+  }
+  else {
+    Kernel::log("get_doxm_callback(): Failed to find initial request.\n");
+  }
+}
+
+
+void post_resrc_callback(oc_client_response_t* data) {
+  StringBuilder _log;
+  _log.concat("get_resrc_callback(): \n");
+  oc_rep_t *rep = data->payload;
+  while (rep != NULL) {
+    _log.concatf("  key %s, value ", oc_string(rep->name));
+    switch (rep->type) {
+      case BOOL:
+        _log.concatf("%s\n", rep->value_boolean?"true":"false");
+        break;
+      case INT:
+        _log.concatf("%d\n", rep->value_int);
+        break;
+      case STRING:
+        _log.concatf("%s\n", oc_string(rep->value_string));
+        break;
+      default:
+        break;
+    }
+    rep = rep->next;
+  }
+  Kernel::log(&_log);
+}
+
+
+void get_resrc_callback(oc_client_response_t* data) {
+  StringBuilder _log;
+  _log.concat("get_resrc_callback(): \n");
+  oc_rep_t *rep = data->payload;
+  while (rep != NULL) {
+    _log.concatf("key %s, value ", oc_string(rep->name));
+    switch (rep->type) {
+      case BOOL:
+        _log.concatf("%s\n", rep->value_boolean?"true":"false");
+        break;
+      case INT:
+        _log.concatf("%d\n", rep->value_int);
+        break;
+      case STRING:
+        _log.concatf("%s\n", oc_string(rep->value_string));
+        break;
+      default:
+        break;
+    }
+    rep = rep->next;
+  }
+  Kernel::log(&_log);
+}
+
 
 
 /*******************************************************************************
@@ -61,36 +150,94 @@ Provisioner::Provisioner(Argument* root_config) : Provisioner() {
 * Unlike many of the other EventReceivers, THIS one needs to be able to be torn down.
 */
 Provisioner::~Provisioner() {
+  while (_known_devices.size()) {
+    delete _known_devices.dequeue();
+  }
 }
 
 
-
+/**
+* We are now responsible for the memory attached to dev_args.
+*
+* @param  dev_args [description]
+* @return          0 on success.
+*/
 int8_t Provisioner::queryDeviceDoxm(Argument* dev_args) {
-  StringBuilder* ip6_addr = nullptr;
-  StringBuilder* uri      = nullptr;
-  StringBuilder* di       = nullptr;
-  uint16_t ip6_port       = 0;
-  uint8_t  flags          = 0;
+  oc_server_handle_t* srv_ep = nullptr;
+  StringBuilder* uri         = nullptr;
+  StringBuilder* di          = nullptr;
   dev_args->printDebug(&local_log);
 
   if (dev_args->retrieveArgByKey("secure")) {
     Kernel::log("Found secure device. Proceeding to query its doxm...\n");
-    if (0 == dev_args->getValueAs("ip6_addr", &ip6_addr)) {
+    if (0 == dev_args->getValueAs("server", &srv_ep)) {
       if (0 == dev_args->getValueAs("uri", &uri)) {
         if (0 == dev_args->getValueAs("di", &di)) {
-          if (0 == dev_args->getValueAs("ip6_port", &ip6_port)) {
-            if (0 == dev_args->getValueAs("r_flags", &flags)) {
-              // Build an endpoint definition for OIC and start the query.
-              return 0;
-            }
-          }
+          // Take ownership of the argument chain.
+          _known_devices.insert(dev_args);
+          // Build an endpoint definition for OIC and start the query.
+          flushLocalLog();
+          oc_do_get("/oic/sec/doxm", srv_ep, NULL, get_doxm_callback, LOW_QOS);
+          return 0;
         }
+        else {
+          local_log.concat("queryDeviceDoxm(): Failed to get 'di'.\n");
+        }
+      }
+      else {
+        local_log.concat("queryDeviceDoxm(): Failed to get 'uri'.\n");
+      }
+    }
+    else {
+      local_log.concat("queryDeviceDoxm(): Failed to get 'server'.\n");
+    }
+  }
+  delete dev_args;
+  flushLocalLog();
+  return -1;
+}
+
+
+int8_t Provisioner::_get_resource_by_idx(int idx) {
+  Argument* a = _known_devices.get(idx);
+  if (a) {
+    oc_server_handle_t* srv_ep = nullptr;
+    StringBuilder* uri         = nullptr;
+    if (0 == a->getValueAs("server", &srv_ep)) {
+      if (0 == a->getValueAs("uri", &uri)) {
+        oc_do_get((char*)uri->string(), srv_ep, NULL, get_resrc_callback, LOW_QOS);
       }
     }
   }
-
   return -1;
 }
+
+//extern CborEncoder g_encoder, root_map, links_array;
+int8_t Provisioner::_post_resource_by_idx(int idx, int val) {
+  Argument* a = _known_devices.get(idx);
+  if (a) {
+    oc_server_handle_t* srv_ep = nullptr;
+    StringBuilder* uri         = nullptr;
+    if (0 == a->getValueAs("server", &srv_ep)) {
+      if (0 == a->getValueAs("uri", &uri)) {
+        if (oc_init_put((char*)uri->string(), srv_ep, NULL, &post_resrc_callback, LOW_QOS)) {
+          cbor_encoder_create_map(&g_encoder, &root_map, CborIndefiniteLength);
+          cbor_encode_text_string(&root_map, "state", strlen("state"));       \
+          cbor_encode_boolean(&root_map, (val > 0));                        \
+          cbor_encode_text_string(&root_map, "power", strlen("power"));       \
+          cbor_encode_int(&root_map, val);                        \
+          cbor_encoder_close_container(&g_encoder, &root_map);
+
+          if (oc_do_put()) local_log.concat("Sent PUT request\n");
+          else local_log.concat("Could not send PUT request\n");
+        }
+        else local_log.concat("Could not init PUT request\n");
+      }
+    }
+  }
+  return -1;
+}
+
 
 
 /****************************************************************************************************
@@ -213,14 +360,12 @@ int8_t Provisioner::notify(ManuvrRunnable *active_event) {
     case MANUVR_MSG_OIC_DISCOVERY:
       if (args) {
         // Detach the Argument from the message. We need to keep it.
-        queryDeviceDoxm(active_event->takeArgs());
-        //if (0 == args->getValueAs(&str)) {
-        //  local_log.concat("Discovered new device:\t");
-        //  local_log.concatHandoff(str);
-        //  if (relayDiscovery()) {
-        //    // TODO: Send to connected TCP clients.
-        //  }
-        //}
+        if (0 == queryDeviceDoxm(active_event->takeArgs())) {
+          local_log.concat("Discovered new device:\t");
+          if (relayDiscovery()) {
+            // TODO: Send to connected TCP clients.
+          }
+        }
         return_value++;
       }
       break;
@@ -264,6 +409,21 @@ void Provisioner::procDirectDebugInstruction(StringBuilder *input) {
   char c    = *(str);
 
   switch (c) {
+    case 'g':
+      // Get a resource.
+      local_log.concatf("Resource get %s.\n",
+        (0 == _get_resource_by_idx(input->position_as_int(1))) ?
+          "succeeded" : "failed"
+      );
+      break;
+    case 'p':
+      // Get a resource.
+      local_log.concatf("Resource post %s.\n",
+        (0 == _post_resource_by_idx(input->position_as_int(1), input->position_as_int(2))) ?
+          "succeeded" : "failed"
+      );
+      break;
+
     default:
       EventReceiver::procDirectDebugInstruction(input);
       break;
