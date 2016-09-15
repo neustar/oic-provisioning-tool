@@ -168,7 +168,7 @@ int8_t Provisioner::queryDeviceDoxm(Argument* dev_args) {
   StringBuilder* di          = nullptr;
   dev_args->printDebug(&local_log);
 
-  if (dev_args->retrieveArgByKey("secure")) {
+  //if (dev_args->retrieveArgByKey("secure")) {
     Kernel::log("Found secure device. Proceeding to query its doxm...\n");
     if (0 == dev_args->getValueAs("server", &srv_ep)) {
       if (0 == dev_args->getValueAs("uri", &uri)) {
@@ -191,7 +191,7 @@ int8_t Provisioner::queryDeviceDoxm(Argument* dev_args) {
     else {
       local_log.concat("queryDeviceDoxm(): Failed to get 'server'.\n");
     }
-  }
+  //}
   delete dev_args;
   flushLocalLog();
   return -1;
@@ -205,14 +205,27 @@ int8_t Provisioner::_get_resource_by_idx(int idx) {
     StringBuilder* uri         = nullptr;
     if (0 == a->getValueAs("server", &srv_ep)) {
       if (0 == a->getValueAs("uri", &uri)) {
-        oc_do_get((char*)uri->string(), srv_ep, NULL, get_resrc_callback, LOW_QOS);
+        if (oc_do_get((char*)uri->string(), srv_ep, NULL, get_resrc_callback, LOW_QOS)) {
+          return 0;
+        }
+        else {
+          local_log.concat("_get_resource_by_idx(): Failed to oc_do_get().\n");
+        }
+      }
+      else {
+        local_log.concat("_get_resource_by_idx(): No retained URI.\n");
       }
     }
+    else {
+      local_log.concat("_get_resource_by_idx(): No retained server endpoint.\n");\
+    }
+  }
+  else {
+    local_log.concat("_get_resource_by_idx(): No retained Argument.\n");
   }
   return -1;
 }
 
-//extern CborEncoder g_encoder, root_map, links_array;
 int8_t Provisioner::_post_resource_by_idx(int idx, int val) {
   Argument* a = _known_devices.get(idx);
   if (a) {
@@ -228,7 +241,9 @@ int8_t Provisioner::_post_resource_by_idx(int idx, int val) {
           cbor_encode_int(&root_map, val);                        \
           cbor_encoder_close_container(&g_encoder, &root_map);
 
-          if (oc_do_put()) local_log.concat("Sent PUT request\n");
+          if (oc_do_put()) {
+            return 0;
+          }
           else local_log.concat("Could not send PUT request\n");
         }
         else local_log.concat("Could not init PUT request\n");

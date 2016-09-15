@@ -53,6 +53,10 @@ ifeq ($(SECURE),1)
 	INCLUDES   += -I./iotivity/deps/tinydtls
 endif
 
+ifeq ($(DEBUG),1)
+LOCAL_C_FLAGS += -DDEBUG
+endif
+
 ###########################################################################
 # Parameter unification and make targets
 ###########################################################################
