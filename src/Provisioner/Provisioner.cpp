@@ -177,7 +177,7 @@ int8_t Provisioner::queryDeviceDoxm(Argument* dev_args) {
           _known_devices.insert(dev_args);
           // Build an endpoint definition for OIC and start the query.
           flushLocalLog();
-          oc_do_get("/oic/sec/doxm", srv_ep, NULL, get_doxm_callback, LOW_QOS);
+          oc_do_get("/oic/sec/doxm", srv_ep, NULL, get_doxm_callback, LOW_QOS, NULL);
           return 0;
         }
         else {
@@ -205,7 +205,7 @@ int8_t Provisioner::_get_resource_by_idx(int idx) {
     StringBuilder* uri         = nullptr;
     if (0 == a->getValueAs("server", &srv_ep)) {
       if (0 == a->getValueAs("uri", &uri)) {
-        if (oc_do_get((char*)uri->string(), srv_ep, NULL, get_resrc_callback, LOW_QOS)) {
+        if (oc_do_get((char*)uri->string(), srv_ep, NULL, get_resrc_callback, LOW_QOS, NULL)) {
           return 0;
         }
         else {
@@ -233,7 +233,7 @@ int8_t Provisioner::_post_resource_by_idx(int idx, int val) {
     StringBuilder* uri         = nullptr;
     if (0 == a->getValueAs("server", &srv_ep)) {
       if (0 == a->getValueAs("uri", &uri)) {
-        if (oc_init_put((char*)uri->string(), srv_ep, NULL, &post_resrc_callback, LOW_QOS)) {
+        if (oc_init_put((char*)uri->string(), srv_ep, NULL, &post_resrc_callback, LOW_QOS, NULL)) {
           cbor_encoder_create_map(&g_encoder, &root_map, CborIndefiniteLength);
           cbor_encode_text_string(&root_map, "state", strlen("state"));       \
           cbor_encode_boolean(&root_map, (val > 0));                        \
@@ -423,25 +423,29 @@ void Provisioner::procDirectDebugInstruction(StringBuilder *input) {
   char* str = input->position(0);
   char c    = *(str);
 
-  switch (c) {
-    case 'g':
-      // Get a resource.
-      local_log.concatf("Resource get %s.\n",
-        (0 == _get_resource_by_idx(input->position_as_int(1))) ?
-          "succeeded" : "failed"
-      );
-      break;
-    case 'p':
-      // Get a resource.
-      local_log.concatf("Resource post %s.\n",
-        (0 == _post_resource_by_idx(input->position_as_int(1), input->position_as_int(2))) ?
-          "succeeded" : "failed"
-      );
-      break;
+  if (0) {
+  }
+  else {
+    switch (c) {
+      case 'g':
+        // Get a resource.
+        local_log.concatf("Resource get %s.\n",
+          (0 == _get_resource_by_idx(input->position_as_int(1))) ?
+            "succeeded" : "failed"
+        );
+        break;
+      case 'p':
+        // Get a resource.
+        local_log.concatf("Resource post %s.\n",
+          (0 == _post_resource_by_idx(input->position_as_int(1), input->position_as_int(2))) ?
+            "succeeded" : "failed"
+        );
+        break;
 
-    default:
-      EventReceiver::procDirectDebugInstruction(input);
-      break;
+      default:
+        EventReceiver::procDirectDebugInstruction(input);
+        break;
+    }
   }
 
   flushLocalLog();
