@@ -26,11 +26,12 @@ Date:   2016.09.10
 
 extern "C" {
   static bool light_state = false;
+  static uint8_t light_gpio_pin = 14;
 
   static void set_device_custom_property(void *data) {
     // TODO: There *has* to be a better way.
     light_state = !light_state;
-    setPin(14, light_state);
+    setPin(light_gpio_pin, light_state);
   }
 
 
@@ -53,7 +54,7 @@ extern "C" {
     }
     light_state = state;
     Kernel::log(light_state ? "value: ON\n" : "value: OFF\n");
-    setPin(14, light_state);
+    setPin(light_gpio_pin, light_state);
     oc_send_response(request, OC_STATUS_CHANGED);
   }
 
@@ -137,9 +138,9 @@ LostPuppy::~LostPuppy() {
 */
 int8_t LostPuppy::bootComplete() {
   EventReceiver::bootComplete();
-  gpioDefine(14, OUTPUT);
+  gpioDefine(light_gpio_pin, OUTPUT);
   light_state = false;
-  setPin(14, light_state);  // We will assume there is no inversion in hardware.
+  setPin(light_gpio_pin, light_state);  // We will assume there is no inversion in hardware.
   return 1;
 }
 
@@ -151,11 +152,12 @@ int8_t LostPuppy::bootComplete() {
 */
 int8_t LostPuppy::erConfigure(Argument* opts) {
   int8_t return_value = 0;
-  Argument* temp = opts->retrieveArgByKey("some_runtime_key");
+  Argument* temp = opts->retrieveArgByKey("gpio_pin");
   if (temp) {
     // TODO: Need a better way to do this.
     uint8_t val = 0;
     if ((0 == temp->getValueAs(&val)) && (0 != val)) {
+      light_gpio_pin = val;
     }
   }
   return return_value;
@@ -238,6 +240,7 @@ void LostPuppy::printDebug(StringBuilder *output) {
   else {
     output->concat("-- No owner (*arf*).\n");
   }
+  output->concatf("-- GPIO pin:            %u\n", light_gpio_pin);
 }
 
 

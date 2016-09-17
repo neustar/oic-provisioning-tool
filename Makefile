@@ -3,8 +3,6 @@
 # Author: J. Ian Lindsay
 # Date:   2016.08.30
 ###########################################################################
-FIRMWARE_NAME      = neudev
-
 OPTIMIZATION       = -O1
 C_STANDARD         = gnu99
 CPP_STANDARD       = gnu++11
@@ -110,15 +108,17 @@ export MANUVR_PLATFORM=LINUX
 export SECURE=1
 export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/lib/mbedTLS_conf.h
 
-.PHONY: all
+#.PHONY: all
+# TODO: "make" should build both tools.
 
 
-all: libs
-	$(CXX) -static -o $(FIRMWARE_NAME) $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
-	$(SZ) $(FIRMWARE_NAME)
+neudev: libs
+	$(CXX) -static -o neudev $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+	$(SZ) neudev
 
 lostpuppy: libs
 	$(CXX) -static -o lostpuppy $(CPP_SRCS) $(CPP_FLAGS) -std=$(CPP_STANDARD) $(LIBS)
+	$(SZ) lostpuppy
 
 builddir:
 	mkdir -p $(OUTPUT_PATH)
@@ -127,7 +127,7 @@ libs: builddir
 	$(MAKE) -C lib/
 
 clean:
-	rm -f *.o *.su *~ lostpuppy $(FIRMWARE_NAME)
+	rm -f *.o *.su *~ lostpuppy neudev
 
 fullclean: clean
 	rm -rf $(OUTPUT_PATH)

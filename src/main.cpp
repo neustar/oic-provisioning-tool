@@ -43,6 +43,11 @@ int main(int argc, const char *argv[]) {
   printf("%s (PID %u): Starting...\n", argv[0], getpid());
   Argument* opts = parseFromArgCV(argc, argv);
 
+  // These are some small ancilary functions of the program.
+  if (opts->retrieveArgByKey("pack_cred")) {
+    UUID* pack_uuid = nullptr;
+  }
+
   platform.platformPreInit(opts);
   kernel = platform.kernel();
 
