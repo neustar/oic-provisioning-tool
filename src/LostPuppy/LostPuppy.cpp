@@ -155,9 +155,9 @@ int8_t LostPuppy::erConfigure(Argument* opts) {
   Argument* temp = opts->retrieveArgByKey("gpio_pin");
   if (temp) {
     // TODO: Need a better way to do this.
-    uint8_t val = 0;
-    if ((0 == temp->getValueAs(&val)) && (0 != val)) {
-      light_gpio_pin = val;
+    const char* val;
+    if ((0 == temp->getValueAs(&val)) && (nullptr != val)) {
+      light_gpio_pin = atoi(val);
     }
   }
   return return_value;
