@@ -11,5 +11,5 @@ rm -rf lib/mbedtls
 git clone https://github.com/ARMmbed/mbedtls.git lib/mbedtls
 
 # Manuvr...
-#rm -rf lib/ManuvrOS
+rm -rf lib/ManuvrOS
 git clone https://github.com/jspark311/ManuvrOS.git lib/ManuvrOS
