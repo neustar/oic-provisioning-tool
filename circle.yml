@@ -1,0 +1,17 @@
+machine:
+  timezone:
+    America/Los_Angeles
+
+  services:
+    - docker
+
+dependencies:
+  override:
+    - ./downloadDeps.sh
+
+test:
+  override:
+    - make OIC_CLIENT=1
+    - make fullclean
+    - make lostpuppy OIC_SERVER=1
+    - docker build .  
