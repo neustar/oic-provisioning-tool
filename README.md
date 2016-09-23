@@ -1,5 +1,5 @@
 
-[![CircleCI](https://circleci.com/gh/datasnap-io/oic-provisioning-tool.svg?style=shield&circle-token=a77e536ac8c03e8b93b7a4c72e2d2d5480add75f)](https://circleci.com/gh/datasnap-io/oic-provisioning-tool)
+[![CircleCI](https://circleci.com/gh/neustar/oic-provisioning-tool.svg?style=shield&circle-token=a77e536ac8c03e8b93b7a4c72e2d2d5480add75f)](https://circleci.com/gh/neustar/oic-provisioning-tool)
 
 
 # Neudev and LostPuppy
