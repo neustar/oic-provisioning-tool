@@ -9,7 +9,7 @@ LostPuppy is an OIC device that is discoverable and unprovisioned. It exhibits t
 
 Neudev is a tool for onboarding devices, and debugging low-level IoT issues.
 
-Both programs should be expected to undergo changes, and not coded against as a premise for other programs. It is unfinished.
+Both programs are "alpha", which means they should be expected to undergo changes, and not coded against as a premise for other programs. It is unfinished.
 
 ----------------------
 
