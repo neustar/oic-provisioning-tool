@@ -11,6 +11,8 @@ Neudev is a tool for onboarding devices, and debugging low-level IoT issues.
 
 Both programs are "alpha", which means they should be expected to undergo changes, and not coded against as a premise for other programs. It is unfinished.
 
+Platform support is contingent on upstream libraries. But both programs were meant to be built and run on linux.
+
 ----------------------
 
 #### What is in this repository:
