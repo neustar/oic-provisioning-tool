@@ -22,12 +22,7 @@ git clone https://github.com/ARMmbed/mbedtls.git lib/mbedtls
 
 # Manuvr...
 rm -rf lib/ManuvrOS
-git clone https://github.com/jspark311/ManuvrOS.git lib/ManuvrOS
-
-#
-# HACK: Pin to this version of ManuvrOS because changes are breaking the build.
-#       (Its a good idea to pin all dependency versions anyways :P)
-#
+git clone -n https://github.com/Manuvr/ManuvrOS.git lib/ManuvrOS
 cd lib/ManuvrOS
-git reset --hard f8442f1270252db0ff53f74a831dfb3ce95a4e41
+git checkout 294144fbbf886af0ab1b94440acd40975d0d9c8e
 cd ../..
