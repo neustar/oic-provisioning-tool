@@ -1,0 +1,13 @@
+FROM neudevbase
+
+ENV DEBUG 1
+ENV OIC_CLIENT 1
+
+# TODO: Would rather use ENV...
+RUN make neudev DEBUG=1 OIC_CLIENT=1
+
+# TCP 5685: Onboarding results
+EXPOSE 5685
+
+ENTRYPOINT ["/root/neudev"]
+CMD ["--console"]

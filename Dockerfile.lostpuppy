@@ -1,0 +1,14 @@
+FROM neudevbase
+
+ENV DEBUG 1
+ENV OIC_SERVER 1
+
+# TODO: Would rather use ENV...
+RUN make lostpuppy DEBUG=1 OIC_SERVER=1
+
+# UDP 5683: coap
+# UDP 5684: coaps
+EXPOSE 5683 5684
+
+ENTRYPOINT ["/root/lostpuppy"]
+CMD ["--console"]
