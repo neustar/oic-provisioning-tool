@@ -106,7 +106,7 @@ export CPP_FLAGS    = $(CFLAGS) -fno-rtti -fno-exceptions
 # Tweak the environment for iotivity-constrained.
 export MANUVR_PLATFORM=LINUX
 export SECURE=1
-export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/lib/mbedTLS_conf.h
+MANUVR_OPTIONS += -DMBEDTLS_CONFIG_FILE='<mbedTLS_conf.h>'
 
 #.PHONY: all
 # TODO: "make" should build both tools.
