@@ -275,8 +275,8 @@ int8_t Provisioner::_post_resource_by_idx(int idx, int val) {
 *
 * @return 0 on no action, 1 on action, -1 on failure.
 */
-int8_t Provisioner::bootComplete() {
-  EventReceiver::bootComplete();
+int8_t Provisioner::attached() {
+  EventReceiver::attached();
   return 1;
 }
 
@@ -310,11 +310,11 @@ int8_t Provisioner::erConfigure(Argument* opts) {
       int src_len = strlen(buf);
       uint8_t* cbor_buf = (uint8_t*) alloca(src_len);
       size_t result_len = 0;
-      int ret = mbedtls_base64_decode(
+      int ret = wrapped_base64_decode(
                   cbor_buf,
                   src_len,
                   &result_len,
-                  (const unsigned char*) buf,
+                  (const uint8_t*) buf,
                   src_len
                 );
       if (0 == ret) {
@@ -418,7 +418,7 @@ void Provisioner::printDebug(StringBuilder *output) {
 }
 
 
-#if defined(__MANUVR_CONSOLE_SUPPORT)
+#if defined(MANUVR_CONSOLE_SUPPORT)
 void Provisioner::procDirectDebugInstruction(StringBuilder *input) {
   char* str = input->position(0);
   char c    = *(str);
@@ -450,5 +450,5 @@ void Provisioner::procDirectDebugInstruction(StringBuilder *input) {
 
   flushLocalLog();
 }
-#endif  // __MANUVR_CONSOLE_SUPPORT
+#endif  // MANUVR_CONSOLE_SUPPORT
 #endif  // OC_CLIENT && MANUVR_OPENINTERCONNECT

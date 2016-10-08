@@ -52,13 +52,12 @@ CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 CPP_SRCS  =
 
 NEUDEV_OPTIONS += -D__MANUVR_LINUX
-NEUDEV_OPTIONS += -D__MANUVR_CONSOLE_SUPPORT
+NEUDEV_OPTIONS += -DMANUVR_CONSOLE_SUPPORT
 NEUDEV_OPTIONS += -DMANUVR_STORAGE
 NEUDEV_OPTIONS += -DMANUVR_CBOR
 NEUDEV_OPTIONS += -DMANUVR_SUPPORT_TCPSOCKET
 NEUDEV_OPTIONS += -DMANUVR_OPENINTERCONNECT
-NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
-NEUDEV_OPTIONS += -D__MANUVR_MBEDTLS
+NEUDEV_OPTIONS += -DWITH_MBEDTLS
 NEUDEV_OPTIONS += -DOC_SECURITY
 
 # Since we are building on linux, we will have threading support via
@@ -78,6 +77,7 @@ endif
 ifeq ($(DEBUG),1)
 NEUDEV_OPTIONS += -D__MANUVR_DEBUG
 NEUDEV_OPTIONS += -D__MANUVR_PIPE_DEBUG
+NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
 OPTIMIZATION    = -O0 -g
 export DEBUG=1
 endif
@@ -93,6 +93,9 @@ else ifeq ($(OIC_CLIENT),1)
 	CPP_SRCS += src/Provisioner/Provisioner.cpp
 endif
 
+# mbedTLS will require this in order to use our chosen options.
+NEUDEV_OPTIONS += -DMBEDTLS_CONFIG_FILE='<mbedTLS_conf.h>'
+
 
 ###########################################################################
 # Rules for building the program follow...
@@ -106,7 +109,7 @@ export CPP_FLAGS    = $(CFLAGS) -fno-rtti -fno-exceptions
 # Tweak the environment for iotivity-constrained.
 export MANUVR_PLATFORM=LINUX
 export SECURE=1
-export MBEDTLS_CONFIG_FILE = $(WHERE_I_AM)/lib/mbedTLS_conf.h
+
 
 #.PHONY: all
 # TODO: "make" should build both tools.

@@ -31,7 +31,7 @@ Regardless of tool, you can pass the DEBUG build flag to make...
 #### Neudev
 
     ./downloadDeps.sh
-    make OIC_CLIENT=1
+    make neudev OIC_CLIENT=1
 
 #### LostPuppy
 

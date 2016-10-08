@@ -136,8 +136,8 @@ LostPuppy::~LostPuppy() {
 *
 * @return 0 on no action, 1 on action, -1 on failure.
 */
-int8_t LostPuppy::bootComplete() {
-  EventReceiver::bootComplete();
+int8_t LostPuppy::attached() {
+  EventReceiver::attached();
   gpioDefine(light_gpio_pin, OUTPUT);
   light_state = false;
   setPin(light_gpio_pin, light_state);  // We will assume there is no inversion in hardware.
@@ -155,7 +155,7 @@ int8_t LostPuppy::erConfigure(Argument* opts) {
   Argument* temp = opts->retrieveArgByKey("gpio_pin");
   if (temp) {
     // TODO: Need a better way to do this.
-    const char* val;
+    const char* val = nullptr;
     if ((0 == temp->getValueAs(&val)) && (nullptr != val)) {
       light_gpio_pin = atoi(val);
     }
@@ -244,7 +244,7 @@ void LostPuppy::printDebug(StringBuilder *output) {
 }
 
 
-#if defined(__MANUVR_CONSOLE_SUPPORT)
+#if defined(MANUVR_CONSOLE_SUPPORT)
 void LostPuppy::procDirectDebugInstruction(StringBuilder *input) {
   char* str = input->position(0);
   char c    = *(str);
@@ -257,5 +257,5 @@ void LostPuppy::procDirectDebugInstruction(StringBuilder *input) {
 
   flushLocalLog();
 }
-#endif  // __MANUVR_CONSOLE_SUPPORT
+#endif  // MANUVR_CONSOLE_SUPPORT
 #endif  // OC_CLIENT && MANUVR_OPENINTERCONNECT

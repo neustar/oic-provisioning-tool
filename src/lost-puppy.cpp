@@ -26,7 +26,7 @@ char* program_name = nullptr;
 /*******************************************************************************
 * BufferPipe strategies particular to this firmware.                           *
 *******************************************************************************/
-#if defined(__MANUVR_CONSOLE_SUPPORT) && defined(MANUVR_SUPPORT_TCPSOCKET)
+#if defined(MANUVR_CONSOLE_SUPPORT) && defined(MANUVR_SUPPORT_TCPSOCKET)
 BufferPipe* _pipe_factory_2(BufferPipe* _n, BufferPipe* _f) {
   ManuvrConsole* _console = new ManuvrConsole(_n);
   kernel->subscribe(_console);
@@ -79,12 +79,12 @@ int main(int argc, const char *argv[]) {
   */
 
   #if defined(MANUVR_SUPPORT_TCPSOCKET)
-    #if defined(__MANUVR_CONSOLE_SUPPORT)
+    #if defined(MANUVR_CONSOLE_SUPPORT)
       // Setup TCP socket for console.
       //ManuvrTCP console_srv((const char*) "0.0.0.0", 5686);
       //kernel->subscribe(&console_srv);
       //console_srv.listen();
-    #endif  //__MANUVR_CONSOLE_SUPPORT
+    #endif  //MANUVR_CONSOLE_SUPPORT
   #endif  //MANUVR_SUPPORT_TCPSOCKET
 
   while (1) {
