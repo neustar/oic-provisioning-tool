@@ -110,7 +110,6 @@ export CPP_FLAGS    = $(CFLAGS) -fno-rtti -fno-exceptions
 export MANUVR_PLATFORM=LINUX
 export SECURE=1
 
-
 #.PHONY: all
 # TODO: "make" should build both tools.
 

@@ -33,5 +33,5 @@ lib/iotivity/
 lib/ManuvrOS/
 lib/ManuvrOS
 
-neudev
-lostpuppy
+./neudev
+./lostpuppy

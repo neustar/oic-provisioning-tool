@@ -1,9 +1,17 @@
+
+[![CircleCI](https://circleci.com/gh/neustar/oic-provisioning-tool.svg?style=shield&circle-token=a77e536ac8c03e8b93b7a4c72e2d2d5480add75f)](https://circleci.com/gh/neustar/oic-provisioning-tool)
+
+
 # Neudev and LostPuppy
 A pair of programs for OIC provisioning workflows.
 
 LostPuppy is an OIC device that is discoverable and unprovisioned. It exhibits the "just works" provisioning work-flow.
 
 Neudev is a tool for onboarding devices, and debugging low-level IoT issues.
+
+Both programs are "alpha", which means they should be expected to undergo changes, and not coded against as a premise for other programs. It is unfinished.
+
+Platform support is contingent on upstream libraries. But both programs were meant to be built and run on linux.
 
 ----------------------
 
@@ -66,9 +74,17 @@ Specific usage information [is given here](doc/HOWTO.md).
 
 
 ----------------------
+## Bugs, contributions, and point-of-contact
+
+This program was written by J. Ian Lindsay for Neustar's IoT department. Please direct non-problem inquiries to ian.lindsay@neustar.biz. For bugs, please use github's issue-tracker.
+
+If you wish to publish a fix, improvement, or extension. Please fork, modify, and submit a PR.
+
+When you contribute code, you affirm that the contribution is your original work and that you license the work to the project under the project's open source license. Whether or not you state this explicitly, by submitting any copyrighted material via pull request, email, or other means you agree to license the material under the project's open source license and warrant that you have the legal authority to do so.
+
+
+----------------------
 ## License
 Original code is covered by LICENSE.
 
-Code adapted from others' work inherits their license terms, which were preserved in the commentary where it applies.
-
-This program
+Code adapted from others' work inherits their attributions and license terms (if they differ from LICENSE), which were preserved in the commentary where it applies.
