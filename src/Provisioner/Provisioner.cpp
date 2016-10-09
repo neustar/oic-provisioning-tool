@@ -8,6 +8,7 @@ Date:   2016.09.10
 
 #if defined(OC_CLIENT) && defined(MANUVR_OPENINTERCONNECT)
 #include "Provisioner.h"
+#include <CommonConstants.h>
 #include <Platform/Platform.h>
 
 //ManuvrOIC::INSTANCE

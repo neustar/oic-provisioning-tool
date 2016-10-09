@@ -14,7 +14,6 @@ NEUDEV_OPTIONS     = -D_GNU_SOURCE
 # Environmental awareness...
 ###########################################################################
 SHELL          = /bin/sh
-WHERE_I_AM     = $(shell pwd)
 
 export CC      = $(shell which gcc)
 export CXX     = $(shell which g++)
@@ -22,21 +21,22 @@ export AR      = $(shell which ar)
 export SZ      = $(shell which size)
 export MAKE    = $(shell which make)
 
-export OUTPUT_PATH = $(WHERE_I_AM)/build/
+export OUTPUT_PATH = $(BUILD_ROOT)/build/
+export BUILD_ROOT  = $(shell pwd)
 
 
 ###########################################################################
 # Source files, includes, and linker directives...
 ###########################################################################
-INCLUDES    = -I$(WHERE_I_AM)/.
-INCLUDES   += -I$(WHERE_I_AM)/lib/ManuvrOS/ManuvrOS
-INCLUDES   += -I$(WHERE_I_AM)/lib
-INCLUDES   += -I$(WHERE_I_AM)/lib/mbedtls/include
-INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity
-INCLUDES   += -I$(WHERE_I_AM)/lib/iotivity/include
+INCLUDES    = -I$(BUILD_ROOT)/.
+INCLUDES   += -I$(BUILD_ROOT)/lib/ManuvrOS/ManuvrOS
+INCLUDES   += -I$(BUILD_ROOT)/lib
+INCLUDES   += -I$(BUILD_ROOT)/lib/mbedtls/include
+INCLUDES   += -I$(BUILD_ROOT)/lib/iotivity
+INCLUDES   += -I$(BUILD_ROOT)/lib/iotivity/include
 
 # Libraries to link
-LIBS = -L$(OUTPUT_PATH) -L$(WHERE_I_AM)/lib -lstdc++ -lm
+LIBS = -L$(OUTPUT_PATH) -L$(BUILD_ROOT)/lib -lstdc++ -lm
 
 # Wrap the include paths into the flags...
 CFLAGS += $(INCLUDES)
