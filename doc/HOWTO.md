@@ -61,7 +61,6 @@ You can then...
     -- stream-oriented transport
     --
     -- _xport_flags    0x98200000
-    -- xport_id        0x0002
     -- bytes sent      0
     -- bytes received  0
     --

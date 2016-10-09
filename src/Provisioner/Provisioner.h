@@ -43,8 +43,8 @@ class Provisioner : public EventReceiver {
     /* Overrides from EventReceiver */
     void procDirectDebugInstruction(StringBuilder*);
     void printDebug(StringBuilder*);
-    int8_t notify(ManuvrRunnable*);
-    int8_t callback_proc(ManuvrRunnable *);
+    int8_t notify(ManuvrMsg*);
+    int8_t callback_proc(ManuvrMsg*);
     int8_t erConfigure(Argument*);
 
     inline bool isProvisioning() {  return _er_flag(OIC_PROV_FLAG_PROVISIONING);    };
