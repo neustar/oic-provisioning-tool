@@ -21,8 +21,9 @@ export AR      = $(shell which ar)
 export SZ      = $(shell which size)
 export MAKE    = $(shell which make)
 
-export OUTPUT_PATH = $(BUILD_ROOT)/build/
-export BUILD_ROOT  = $(shell pwd)
+# This is where we will store compiled libs and the final output.
+export BUILD_ROOT   = $(shell pwd)
+export OUTPUT_PATH  = $(BUILD_ROOT)/build
 
 
 ###########################################################################
