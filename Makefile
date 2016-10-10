@@ -58,8 +58,11 @@ NEUDEV_OPTIONS += -DMANUVR_STORAGE
 NEUDEV_OPTIONS += -DMANUVR_CBOR
 NEUDEV_OPTIONS += -DMANUVR_SUPPORT_TCPSOCKET
 NEUDEV_OPTIONS += -DMANUVR_OPENINTERCONNECT
-NEUDEV_OPTIONS += -DWITH_MBEDTLS
 NEUDEV_OPTIONS += -DOC_SECURITY
+NEUDEV_OPTIONS += -DWITH_MBEDTLS
+# mbedTLS will require this in order to use our chosen options.
+NEUDEV_OPTIONS += -DMBEDTLS_CONFIG_FILE='<mbedTLS_conf.h>'
+
 
 # Since we are building on linux, we will have threading support via
 # pthreads.
@@ -77,9 +80,9 @@ endif
 # Debugging options...
 ifeq ($(DEBUG),1)
 NEUDEV_OPTIONS += -D__MANUVR_DEBUG
-NEUDEV_OPTIONS += -D__MANUVR_PIPE_DEBUG
+#NEUDEV_OPTIONS += -D__MANUVR_PIPE_DEBUG
 NEUDEV_OPTIONS += -D__MANUVR_EVENT_PROFILER
-OPTIMIZATION    = -O0 -g
+#OPTIMIZATION    = -O0 -g
 export DEBUG=1
 endif
 
@@ -93,9 +96,6 @@ else ifeq ($(OIC_CLIENT),1)
 	CPP_SRCS += src/main.cpp
 	CPP_SRCS += src/Provisioner/Provisioner.cpp
 endif
-
-# mbedTLS will require this in order to use our chosen options.
-NEUDEV_OPTIONS += -DMBEDTLS_CONFIG_FILE='<mbedTLS_conf.h>'
 
 
 ###########################################################################
