@@ -275,8 +275,10 @@ int8_t Provisioner::_post_resource_by_idx(int idx, int val) {
 * @return 0 on no action, 1 on action, -1 on failure.
 */
 int8_t Provisioner::attached() {
-  EventReceiver::attached();
-  return 1;
+  if (EventReceiver::attached()) {
+    return 1;
+  }
+  return 0;
 }
 
 

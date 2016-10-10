@@ -136,11 +136,13 @@ LostPuppy::~LostPuppy() {
 */
 
 int8_t LostPuppy::attached() {
-  EventReceiver::attached();
-  gpioDefine(light_gpio_pin, OUTPUT);
-  light_state = false;
-  setPin(light_gpio_pin, light_state);  // We will assume there is no inversion in hardware.
-  return 1;
+  if (EventReceiver::attached()) {
+    gpioDefine(light_gpio_pin, OUTPUT);
+    light_state = false;
+    setPin(light_gpio_pin, light_state);  // We will assume there is no inversion in hardware.
+    return 1;
+  }
+  return 0;
 }
 
 
