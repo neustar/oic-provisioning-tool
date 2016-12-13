@@ -9,7 +9,7 @@ git clone https://github.com/iotivity/iotivity-constrained.git lib/iotivity
 #       (Its a good idea to pin all dependency versions anyways :P)
 #
 cd lib/iotivity
-git reset --hard a79077f9646edc0814b5800ef49be9d73178a220
+git reset --hard 96b50da1762d016790ac7fa516d95a0252bb2f72
 cd ../..
 
 

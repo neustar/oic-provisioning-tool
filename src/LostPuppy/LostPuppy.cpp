@@ -35,7 +35,7 @@ extern "C" {
   }
 
 
-  static void put_light(oc_request_t *request, oc_interface_mask_t interface) {
+  static void put_light(oc_request_t *request, oc_interface_mask_t interface, void* data) {
     Kernel::log("PUT_light:\n");
     bool state = false;
     oc_rep_t *rep = request->request_payload;
@@ -59,7 +59,7 @@ extern "C" {
   }
 
 
-  static void get_light(oc_request_t *request, oc_interface_mask_t interface) {
+  static void get_light(oc_request_t *request, oc_interface_mask_t interface, void* data) {
     Kernel::log("GET_light:\n");
     // TODO: Strip and re-write all use of macros to executable code.
     //       Debugging preprocessor macros is a waste of life.
@@ -182,7 +182,7 @@ int8_t LostPuppy::erConfigure(Argument* opts) {
 int8_t LostPuppy::callback_proc(ManuvrMsg* event) {
   /* Setup the default return code. If the event was marked as mem_managed, we return a DROP code.
      Otherwise, we will return a REAP code. Downstream of this assignment, we might choose differently. */
-  int8_t return_value = event->kernelShouldReap() ? EVENT_CALLBACK_RETURN_REAP : EVENT_CALLBACK_RETURN_DROP;
+  int8_t return_value = (0 == event->refCount()) ? EVENT_CALLBACK_RETURN_REAP : EVENT_CALLBACK_RETURN_DROP;
 
   /* Some class-specific set of conditionals below this line. */
   switch (event->eventCode()) {
@@ -205,10 +205,10 @@ int8_t LostPuppy::notify(ManuvrMsg* active_event) {
       oc_resource_bind_resource_interface(res, OC_IF_RW);
       oc_resource_set_default_interface(res, OC_IF_RW);
       oc_resource_make_secure(res);
-      oc_resource_set_discoverable(res);
+      oc_resource_set_discoverable(res, true);
       oc_resource_set_periodic_observable(res, 1);
-      oc_resource_set_request_handler(res, OC_GET, get_light);
-      oc_resource_set_request_handler(res, OC_PUT, put_light);
+      oc_resource_set_request_handler(res, OC_GET, get_light, nullptr);
+      oc_resource_set_request_handler(res, OC_PUT, put_light, nullptr);
       oc_add_resource(res);
       return_value++;
       break;
