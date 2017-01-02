@@ -93,8 +93,7 @@ extern "C" {
 /**
 * Vanilla constructor.
 */
-LostPuppy::LostPuppy() : EventReceiver() {
-  setReceiverName("LostPuppy");
+LostPuppy::LostPuppy() : EventReceiver("LostPuppy") {
 }
 
 

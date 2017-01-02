@@ -132,8 +132,7 @@ void get_resrc_callback(oc_client_response_t* data) {
 /**
 * Vanilla constructor.
 */
-Provisioner::Provisioner() : EventReceiver() {
-  setReceiverName("Provisioner");
+Provisioner::Provisioner() : EventReceiver("Provisioner") {
 }
 
 
