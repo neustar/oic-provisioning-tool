@@ -24,4 +24,5 @@ git clone https://github.com/ARMmbed/mbedtls.git lib/mbedtls
 rm -rf lib/ManuvrOS
 git clone https://github.com/Manuvr/ManuvrOS.git lib/ManuvrOS
 cd lib/ManuvrOS
+git reset --hard 9ff4a8ee55598aa0fff53e42b11e16e714cd1ed4
 cd ../..
